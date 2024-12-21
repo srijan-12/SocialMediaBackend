@@ -1,0 +1,4 @@
+User -> fullname, email, password, image, gender, phonenumber, createdAt
+Post -> caption, image, likeRef, commentRef, createdByUserRef
+Like -> postId, likedUserArrayUserRef
+Comment -> postId, CommentUserArrayUserRef, Comments
