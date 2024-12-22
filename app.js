@@ -5,6 +5,7 @@ import postRouter from './src/Controller/post.controller.js';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import commentRouter from './src/Controller/comment.controller.js';
+import likeRouter from './src/Controller/like.controller.js';
 dotenv.config();
 const app = express()
 
@@ -13,6 +14,7 @@ app.use(express.json())
 app.use("/user", userRouter)
 app.use("/post", postRouter)
 app.use("/comment", commentRouter)
+app.use("/like", likeRouter)
 
 connectToDB().then(()=>{
     app.listen(3000, ()=>{

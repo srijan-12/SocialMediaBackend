@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 import validator from 'validator'
 import User from './user.model.js';
+import Like from './like.model.js';
 const postSchema = new mongoose.Schema({
 
     captian: {
@@ -16,8 +17,9 @@ const postSchema = new mongoose.Schema({
             }
         }
     },
-    likes : {
-        type : [mongoose.Schema.Types.ObjectId]
+    likes: {
+        type : [mongoose.Schema.Types.ObjectId],
+        ref : 'Like'
     },
     comments : {
         type : [mongoose.Schema.Types.ObjectId],
