@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import commentRouter from './src/Controller/comment.controller.js';
 import likeRouter from './src/Controller/like.controller.js';
+import connectionRouter from './src/Controller/connection.controller.js';
 dotenv.config();
 const app = express()
 
@@ -15,6 +16,7 @@ app.use("/user", userRouter)
 app.use("/post", postRouter)
 app.use("/comment", commentRouter)
 app.use("/like", likeRouter)
+app.use("/connection", connectionRouter)
 
 connectToDB().then(()=>{
     app.listen(3000, ()=>{
