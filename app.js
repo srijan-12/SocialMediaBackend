@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import commentRouter from './src/Controller/comment.controller.js';
 import likeRouter from './src/Controller/like.controller.js';
 import connectionRouter from './src/Controller/connection.controller.js';
+import otpRouter from './src/Controller/otp.controller.js';
 dotenv.config();
 const app = express()
 
@@ -17,6 +18,7 @@ app.use("/post", postRouter)
 app.use("/comment", commentRouter)
 app.use("/like", likeRouter)
 app.use("/connection", connectionRouter)
+app.use("/otp", otpRouter)
 
 connectToDB().then(()=>{
     app.listen(3000, ()=>{

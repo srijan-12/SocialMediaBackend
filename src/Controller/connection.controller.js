@@ -22,7 +22,7 @@ connectionRouter.post("/send/:status/:toId", isLoggedIn, async(req,res)=>{
         if(foundConnection){
             const fromReq = foundConnection.fromUserId
             const toReq = foundConnection.toUserId
-            if(foundConnection && fromReq.equals(fromId)  && foundConnection.status === 'interested' || foundConnection.status === 'ignored'){
+            if(foundConnection && fromReq.equals(fromId)  && foundConnection.status === 'interested' || foundConnection.status === 'ignored' || foundConnection.status === 'rejected'){
                 throw new Error('Request already sent')
             }
             if(foundConnection && fromReq.equals(toId)  && foundConnection.status === 'interested' || foundConnection.status === 'ignored'){
@@ -31,12 +31,14 @@ connectionRouter.post("/send/:status/:toId", isLoggedIn, async(req,res)=>{
             if(foundConnection && fromReq.equals(fromId)  && foundConnection.status === 'accepted'){
                 throw new Error('You guys are already buddies')
             }
-            if(foundConnection && fromReq.equals(to)  && foundConnection.status === 'accepted'){
+            if(foundConnection && fromReq.equals(toId)  && foundConnection.status === 'accepted'){
                 throw new Error('You guys are already buddies')
             }
         }else{
             const newConnection = new Connection({fromUserId:fromId, toUserId:toId, status : status})
             await newConnection.save()
+            await newConnection.populate({path:'fromUserId', select : '-fullName -image -gender -phoneNumber -createdAt -updatedAt -__v'})
+            await newConnection.populate({path:'toUserId', select : '-fullName -image -gender -phoneNumber -createdAt -updatedAt -__v'})
             return res.status(200).json({result : 'request sent', error : null, data : newConnection})
         }
     }catch(err){
@@ -76,11 +78,11 @@ connectionRouter.post("/response-to-request/:status/:reqId", isLoggedIn, async(r
 connectionRouter.get("/get-pending-request", isLoggedIn, async(req,res)=>{
     try{
         const loggedInUserId = req.user._id
-        const foundConnectionArray = await Connection.find({toUserId: loggedInUserId, status : "interested"}).select('-createdAt -updatedAt -__v').populate({path:   'fromUserId',
-            select : '-fullName -image -gender -phoneNumber -createdAt -updatedAt -__v'
-            }).populate({path: 'toUserId',
-            select : '-fullName -image -gender -phoneNumber -createdAt -updatedAt -__v'
-        })
+        const foundConnectionArray = await Connection.find({toUserId: loggedInUserId, status : "interested"}).select('-createdAt -updatedAt -__v -toUserId -status ').populate({path:   'fromUserId',
+            select : '-fullName -image -gender -phoneNumber -createdAt -updatedAt -__v '
+            })//.populate({path: 'toUserId',
+            //select : '-fullName -image -gender -phoneNumber -createdAt -updatedAt -__v'
+       // })
         if(foundConnectionArray < 1){
             return res.status(200).json({result : `No pending request to show`, error:null, data: foundConnectionArray})
         }
@@ -96,11 +98,18 @@ connectionRouter.get("/get-pending-request", isLoggedIn, async(req,res)=>{
 connectionRouter.get("/get-friends", isLoggedIn, async(req,res)=>{
     try{
         const loggedInUserId = req.user._id
-        const foundConnectionArray = await Connection.find({$or:[{fromUserId : loggedInUserId, status: 'accepted'}, {toUserId : loggedInUserId, status : 'accepted'}]}).select('-createdAt -updatedAt -__v -status').populate({path:   'fromUserId',
-            select : '-fullName -image -gender -phoneNumber -createdAt -updatedAt -__v'
-            }).populate({path: 'toUserId',
-            select : '-fullName -image -gender -phoneNumber -createdAt -updatedAt -__v'
-        })
+        const foundConnectionArray = await Connection.find({$or:[{fromUserId : loggedInUserId, status: 'accepted'}, {toUserId : loggedInUserId, status : 'accepted'}]}).select('-createdAt -updatedAt -__v -status -fromUserId -_id').populate([
+            {
+                path: 'fromUserId',
+                match: { _id: { $ne: loggedInUserId } },
+                select: '-fullName -image -gender -phoneNumber -createdAt -updatedAt -__v -_id',
+            },
+            {
+                path: 'toUserId',
+                match: { _id: { $ne: loggedInUserId } },
+                select: '-fullName -image -gender -phoneNumber -createdAt -updatedAt -__v -_id',
+            },
+        ])
         if(foundConnectionArray < 1){
             return res.status(200).json({result : `No friends yet`, error:null, data: foundConnectionArray})
         }
